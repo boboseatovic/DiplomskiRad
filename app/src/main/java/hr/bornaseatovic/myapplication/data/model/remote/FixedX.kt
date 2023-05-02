@@ -1,21 +1,19 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class FixedX(
-    @SerialName("E_d")
+    @SerializedName("E_d")
     val eD: Double,
-    @SerialName("E_m")
+    @SerializedName("E_m")
     val eM: Double,
-    @SerialName("H(i)_d")
+    @SerializedName("H(i)_d")
     val hiD: Double,
-    @SerialName("H(i)_m")
+    @SerializedName("H(i)_m")
     val hiM: Double,
-    @SerialName("month")
+    @SerializedName("month")
     val month: Int,
-    @SerialName("SD_m")
+    @SerializedName("SD_m")
     val sDM: Double
 )

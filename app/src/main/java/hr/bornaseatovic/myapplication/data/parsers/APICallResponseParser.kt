@@ -1,10 +1,10 @@
 package hr.bornaseatovic.myapplication.data.parsers
 
 import hr.bornaseatovic.myapplication.data.model.presentation.*
-import hr.bornaseatovic.myapplication.data.model.remote.APICallResponse
+import hr.bornaseatovic.myapplication.data.model.remote.PVCalculationsResponse
 
 
-fun APICallResponse.toAPICallPresentation() = APICallPresentation(
+fun PVCalculationsResponse.toPVCalculationsPresentation() = PVCalculationsPresentation(
     monthly = Monthly(
         fixed = this.outputs.monthly.fixed.map {
             Fixed(

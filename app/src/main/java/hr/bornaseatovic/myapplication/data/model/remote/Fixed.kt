@@ -1,15 +1,13 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class Fixed(
-    @SerialName("azimuth")
+    @SerializedName("azimuth")
     val azimuth: Azimuth,
-    @SerialName("slope")
+    @SerializedName("slope")
     val slope: Slope,
-    @SerialName("type")
+    @SerializedName("type")
     val type: String
 )

@@ -1,21 +1,19 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class MeteoData(
-    @SerialName("horizon_db")
+    @SerializedName("horizon_db")
     val horizonDb: String,
-    @SerialName("meteo_db")
+    @SerializedName("meteo_db")
     val meteoDb: String,
-    @SerialName("radiation_db")
+    @SerializedName("radiation_db")
     val radiationDb: String,
-    @SerialName("use_horizon")
+    @SerializedName("use_horizon")
     val useHorizon: Boolean,
-    @SerialName("year_max")
+    @SerializedName("year_max")
     val yearMax: Int,
-    @SerialName("year_min")
+    @SerializedName("year_min")
     val yearMin: Int
 )

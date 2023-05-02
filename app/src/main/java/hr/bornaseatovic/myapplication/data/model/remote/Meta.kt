@@ -1,13 +1,11 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class Meta(
-    @SerialName("inputs")
+    @SerializedName("inputs")
     val inputs: InputsX,
-    @SerialName("outputs")
+    @SerializedName("outputs")
     val outputs: Outputs
 )

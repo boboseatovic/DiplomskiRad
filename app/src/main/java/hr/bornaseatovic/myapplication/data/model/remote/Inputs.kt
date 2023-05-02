@@ -1,19 +1,17 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class Inputs(
-    @SerialName("economic_data")
+    @SerializedName("economic_data")
     val economicData: EconomicData,
-    @SerialName("location")
+    @SerializedName("location")
     val location: Location,
-    @SerialName("meteo_data")
+    @SerializedName("meteo_data")
     val meteoData: MeteoData,
-    @SerialName("mounting_system")
+    @SerializedName("mounting_system")
     val mountingSystem: MountingSystem,
-    @SerialName("pv_module")
+    @SerializedName("pv_module")
     val pvModule: PvModule
 )

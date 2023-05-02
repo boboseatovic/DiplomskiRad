@@ -1,13 +1,11 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class Azimuth(
-    @SerialName("optimal")
+    @SerializedName("optimal")
     val optimal: Boolean,
-    @SerialName("value")
+    @SerializedName("value")
     val value: Int
 )

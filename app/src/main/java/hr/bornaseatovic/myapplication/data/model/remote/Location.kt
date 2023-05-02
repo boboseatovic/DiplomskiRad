@@ -1,15 +1,13 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class Location(
-    @SerialName("elevation")
+    @SerializedName("elevation")
     val elevation: Double,
-    @SerialName("latitude")
+    @SerializedName("latitude")
     val latitude: Double,
-    @SerialName("longitude")
+    @SerializedName("longitude")
     val longitude: Double
 )

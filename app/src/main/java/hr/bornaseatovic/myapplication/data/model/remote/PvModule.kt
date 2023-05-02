@@ -1,15 +1,13 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class PvModule(
-    @SerialName("peak_power")
+    @SerializedName("peak_power")
     val peakPower: Double,
-    @SerialName("system_loss")
+    @SerializedName("system_loss")
     val systemLoss: Double,
-    @SerialName("technology")
+    @SerializedName("technology")
     val technology: String
 )

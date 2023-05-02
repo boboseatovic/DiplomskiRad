@@ -1,15 +1,13 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class MountingSystemX(
-    @SerialName("choices")
+    @SerializedName("choices")
     val choices: String,
-    @SerialName("description")
+    @SerializedName("description")
     val description: String,
-    @SerialName("fields")
+    @SerializedName("fields")
     val fields: Fields
 )

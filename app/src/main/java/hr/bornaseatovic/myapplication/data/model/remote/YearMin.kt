@@ -1,11 +1,9 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class YearMin(
-    @SerialName("description")
+    @SerializedName("description")
     val description: String
 )

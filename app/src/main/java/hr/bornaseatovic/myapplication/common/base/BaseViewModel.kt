@@ -10,6 +10,5 @@ abstract class BaseViewModel<VS, INTENT>: ViewModel() {
     protected val internalState: MutableStateFlow<VS> by lazy { MutableStateFlow(initialState) }
     val viewState: StateFlow<VS>
         get() = internalState
-
     abstract fun onIntent(intent: INTENT)
 }

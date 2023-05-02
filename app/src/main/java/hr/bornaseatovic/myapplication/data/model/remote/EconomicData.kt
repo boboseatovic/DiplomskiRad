@@ -1,15 +1,13 @@
 package hr.bornaseatovic.myapplication.data.model.remote
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class EconomicData(
-    @SerialName("interest")
+    @SerializedName("interest")
     val interest: Any,
-    @SerialName("lifetime")
+    @SerializedName("lifetime")
     val lifetime: Any,
-    @SerialName("system_cost")
+    @SerializedName("system_cost")
     val systemCost: Any
 )
