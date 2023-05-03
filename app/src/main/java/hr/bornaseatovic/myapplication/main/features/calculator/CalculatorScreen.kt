@@ -60,6 +60,61 @@ fun CalculatorScreen(
                 viewModel.onIntent(CalculatorIntents.PromjeniPovrsinaIstocnogKrova(it))
             }
 
+            CalculatorField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                label = "Nagib istočnog krova",
+                value = viewState.nagibIstocnogKrova,
+                unit = "º"
+            ) {
+                viewModel.onIntent(CalculatorIntents.PromjeniNagibIstocnogKrova(it))
+            }
+
+            CalculatorField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                label = "Površina južnog krova",
+                value = viewState.povrsinaJunznogKrova,
+                unit = "m2"
+            ) {
+                viewModel.onIntent(CalculatorIntents.PromjeniPovrsinaJuznogKrova(it))
+            }
+
+            CalculatorField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                label = "Nagib južnog krova",
+                value = viewState.nagibJunznogKrova,
+                unit = "º"
+            ) {
+                viewModel.onIntent(CalculatorIntents.PromjeniNagibJuznogKrova(it))
+            }
+
+            CalculatorField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                label = "Površina zapadnog krova",
+                value = viewState.povrsinaZapadnogKrova,
+                unit = "m2"
+            ) {
+                viewModel.onIntent(CalculatorIntents.PromjeniPovrsinaZapadnogKrova(it))
+            }
+
+            CalculatorField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                label = "Nagib zapadnog krova",
+                value = viewState.nagibZapadnogKrova,
+                unit = "º"
+            ) {
+                viewModel.onIntent(CalculatorIntents.PromjeniNagibZapadnogKrova(it))
+            }
+
             Text(text = viewState.text, color = OffBlack)
         }
 
