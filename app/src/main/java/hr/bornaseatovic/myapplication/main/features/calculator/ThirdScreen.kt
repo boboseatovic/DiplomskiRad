@@ -68,7 +68,7 @@ fun ThirdScreen(
                 )
         ) {
             if (clicked) {
-              
+
             }
         }
     }
