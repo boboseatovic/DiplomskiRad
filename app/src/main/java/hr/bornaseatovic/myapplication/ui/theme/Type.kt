@@ -66,3 +66,35 @@ val AmaliaBold_16: TextStyle
             fontSize = 16.sp
         )
     }
+
+val Montserrat: TextStyle
+    @Composable
+    get() {
+        return TextStyle(
+            fontFamily = FontFamily(Font(R.font.montserrat))
+        )
+    }
+
+val Montserrat_Light: TextStyle
+    @Composable
+    get() {
+        return TextStyle(
+            fontFamily = FontFamily(Font(R.font.montserrat_extra_light))
+        )
+    }
+
+val ZillaSlab: TextStyle
+    @Composable
+    get() {
+        return TextStyle(
+            fontFamily = FontFamily(Font(R.font.zilla_slab_regular))
+        )
+    }
+
+val ZillaSlab_SemiBold: TextStyle
+    @Composable
+    get() {
+        return TextStyle(
+            fontFamily = FontFamily(Font(R.font.zilla_slab_semi_bold))
+        )
+    }

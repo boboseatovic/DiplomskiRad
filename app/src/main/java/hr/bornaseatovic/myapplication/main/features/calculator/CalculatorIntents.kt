@@ -11,4 +11,6 @@ sealed interface CalculatorIntents {
     data class PromjeniNagibJuznogKrova(val nagib: String): CalculatorIntents
     data class PromjeniNagibZapadnogKrova(val nagib: String): CalculatorIntents
 
+    object NavigateToFourthScreen : CalculatorIntents
+
 }

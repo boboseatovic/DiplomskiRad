@@ -1,6 +1,9 @@
 package hr.bornaseatovic.myapplication.main.features.calculator
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hr.bornaseatovic.myapplication.common.base.BaseViewModel
 import hr.bornaseatovic.myapplication.data.Resource
@@ -14,8 +17,6 @@ class CalculatorViewModel @Inject constructor(
     private val pvgisDataSource: PVGISDataSource
 ) : BaseViewModel<CalculatorViewState, CalculatorIntents>() {
     override val initialState = CalculatorViewState()
-
-
     override fun onIntent(intent: CalculatorIntents) {
         when (intent) {
             is CalculatorIntents.PromjeniGeoDuzina -> {
@@ -82,7 +83,9 @@ class CalculatorViewModel @Inject constructor(
 
                 }
             }
+            CalculatorIntents.NavigateToFourthScreen -> {
 
+            }
         }
     }
 }

@@ -12,7 +12,8 @@ import hr.bornaseatovic.myapplication.ui.theme.OffBlack
 @Composable
 fun FirstScreen(
     viewModel: CalculatorViewModel,
-    viewState: CalculatorViewState
+    viewState: CalculatorViewState,
+    onDalje: () -> Unit
 ) {
     Column(modifier = Modifier
         .fillMaxSize()
@@ -118,7 +119,7 @@ fun FirstScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         PrimaryButton(text = "Dalje") {
-            viewModel.onIntent(CalculatorIntents.PressAButton)
+            onDalje()
         }
     }
 }

@@ -10,6 +10,9 @@ import hr.bornaseatovic.myapplication.data.dataSource.LocalDataSource
 import hr.bornaseatovic.myapplication.data.dataSource.PVGISDataSource
 import hr.bornaseatovic.myapplication.data.dataSource.local.Database
 import hr.bornaseatovic.myapplication.data.dataSource.remote.PVgisAPI
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -53,5 +56,11 @@ object AppModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(PVgisAPI::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun providesCoroutineScope(): CoroutineScope {
+        return CoroutineScope(SupervisorJob() + Dispatchers.Default)
     }
 }

@@ -10,25 +10,30 @@ import hr.bornaseatovic.myapplication.ui.components.PrimaryButton
 @Composable
 fun SecondScreen(
     viewModel: CalculatorViewModel,
-    viewState: CalculatorViewState
+    viewState: CalculatorViewState,
+    onDalje: () -> Unit
 ) {
     Column(
         Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(16.dp)
     ) {
-        for(i in 1..12) {
-            CalculatorField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                label = "Energetska potrošnja u $i.mjesecu"
-            )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            for (i in 1..12) {
+                CalculatorField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    label = "Energetska potrošnja u $i.mjesecu"
+                )
+            }
         }
 
         PrimaryButton(text = "Dalje") {
-
+            onDalje()
         }
     }
 }
