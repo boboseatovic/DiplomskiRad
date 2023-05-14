@@ -6,6 +6,9 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
+import androidx.compose.animation.core.EaseInBounce
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -18,6 +21,7 @@ import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
+import hr.bornaseatovic.myapplication.main.features.calculation.map.MapScreen
 import hr.bornaseatovic.myapplication.main.features.calculator.FourthScreen
 import hr.bornaseatovic.myapplication.main.features.home.HomeScreen
 import hr.bornaseatovic.myapplication.main.navigation.NavigationManager
@@ -78,15 +82,26 @@ class MainActivity : ComponentActivity() {
 //                            navController.navigate("fourth_screen")
 //                        }
                     }
+//                    composable(
+//                        "fourth_screen",
+//                        enterTransition = {
+//                            EnterTransition.None
+//                        }
+//                    ) {
+//                        FourthScreen {
+//                            navController.popBackStack("home_route", true, true)
+//                        }
+//                    }
                     composable(
-                        "fourth_screen",
+                        route = HomeDestinations.mapScreen(),
                         enterTransition = {
-                            EnterTransition.None
+                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up, tween(300, easing = EaseInOut))
+                        },
+                        exitTransition = {
+                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down, tween(300, easing = EaseInOut))
                         }
                     ) {
-                        FourthScreen {
-                            navController.popBackStack("home_route", true, true)
-                        }
+                        MapScreen()
                     }
                 }
             }

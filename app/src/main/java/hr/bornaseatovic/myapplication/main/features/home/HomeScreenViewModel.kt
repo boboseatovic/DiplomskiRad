@@ -18,34 +18,10 @@ class HomeScreenViewModel @Inject constructor(
 
     override fun onIntent(intent: HomeScreenIntents) {
         when (intent) {
-            HomeScreenIntents.PressCalculateNew -> {
-                viewModelScope.launch {
-                    delay(600)
-                    navigationManager.navigate(HomeDestinations.mapScreen())
-                }
-            }
-            HomeScreenIntents.CloseMap -> {
-                viewModelScope.launch {
-                    internalState.value = internalState.value.copy(
-                        buttonClicked = mutableStateOf(false),
-                        textAnimation = mutableStateOf(false)
-                    )
-                    delay(400)
-                    internalState.value =internalState.value.copy(
-                        mapVisible = mutableStateOf(false)
-                    )
-                }
-            }
             HomeScreenIntents.OpenMap -> {
                 viewModelScope.launch {
-                    internalState.value = internalState.value.copy(
-                        textAnimation = mutableStateOf(true)
-                    )
-                    delay(400)
-                    internalState.value =internalState.value.copy(
-                        buttonClicked = mutableStateOf(true),
-                        mapVisible = mutableStateOf(true)
-                    )
+                    delay(180)
+                    navigationManager.navigate(HomeDestinations.mapScreen())
                 }
             }
         }
