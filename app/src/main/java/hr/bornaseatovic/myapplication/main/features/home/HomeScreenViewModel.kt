@@ -1,5 +1,6 @@
 package hr.bornaseatovic.myapplication.main.features.home
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hr.bornaseatovic.myapplication.common.base.BaseViewModel
@@ -12,8 +13,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
     private val navigationManager: NavigationManager
-) : BaseViewModel<Unit, HomeScreenIntents>() {
-    override val initialState = Unit
+) : BaseViewModel<HomeScreenViewState, HomeScreenIntents>() {
+    override val initialState = HomeScreenViewState()
 
     override fun onIntent(intent: HomeScreenIntents) {
         when (intent) {
@@ -21,6 +22,30 @@ class HomeScreenViewModel @Inject constructor(
                 viewModelScope.launch {
                     delay(600)
                     navigationManager.navigate(HomeDestinations.mapScreen())
+                }
+            }
+            HomeScreenIntents.CloseMap -> {
+                viewModelScope.launch {
+                    internalState.value = internalState.value.copy(
+                        buttonClicked = mutableStateOf(false),
+                        textAnimation = mutableStateOf(false)
+                    )
+                    delay(400)
+                    internalState.value =internalState.value.copy(
+                        mapVisible = mutableStateOf(false)
+                    )
+                }
+            }
+            HomeScreenIntents.OpenMap -> {
+                viewModelScope.launch {
+                    internalState.value = internalState.value.copy(
+                        textAnimation = mutableStateOf(true)
+                    )
+                    delay(400)
+                    internalState.value =internalState.value.copy(
+                        buttonClicked = mutableStateOf(true),
+                        mapVisible = mutableStateOf(true)
+                    )
                 }
             }
         }

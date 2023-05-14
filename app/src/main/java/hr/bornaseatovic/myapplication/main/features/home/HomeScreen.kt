@@ -21,9 +21,17 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import hr.bornaseatovic.myapplication.ui.theme.*
 import hr.bornaseatovic.myapplication.R
+import hr.bornaseatovic.myapplication.main.features.home.map.MapScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -32,6 +40,8 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     viewModel: HomeScreenViewModel = hiltViewModel()
 ) {
+    val viewState = viewModel.viewState.collectAsState().value
+
     var init by remember {
         mutableStateOf(false)
     }
@@ -42,50 +52,34 @@ fun HomeScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val swipeableState = rememberSwipeableState(false, tween(500))
 
-    val infiniteTrasition = rememberInfiniteTransition()
-    val chevronPositionLoop by infiniteTrasition.animateFloat(
-        initialValue = 3f,
-        targetValue = -3f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOut),
-            repeatMode = RepeatMode.Restart
-        )
-    )
-    val chevronAlphaLoop by infiniteTrasition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOut),
-            repeatMode = RepeatMode.Restart
-        )
-    )
-    var buttonClicked by remember {
-        mutableStateOf(false)
-    }
-    var textAnimation by remember {
-        mutableStateOf(false)
-    }
     val buttonHeight by animateDpAsState(
-        targetValue = if (buttonClicked) LocalConfiguration.current.screenHeightDp.dp + 40.dp else 80.dp,
-        tween(600, easing = EaseInOut)
+        targetValue = if (viewState.buttonClicked.value) LocalConfiguration.current.screenHeightDp.dp + 40.dp else 80.dp,
+        tween(400, easing = EaseInOut)
     )
     val buttonWidth by animateDpAsState(
-        targetValue = if (buttonClicked) LocalConfiguration.current.screenWidthDp.dp else LocalConfiguration.current.screenWidthDp.dp - 24.dp,
-        tween(600, easing = EaseInOut)
+        targetValue = if (viewState.buttonClicked.value) LocalConfiguration.current.screenWidthDp.dp else LocalConfiguration.current.screenWidthDp.dp - 24.dp,
+        tween(400, easing = EaseInOut)
     )
     val screenPadding by animateDpAsState(
-        targetValue = if (buttonClicked) 0.dp else 24.dp,
-        tween(600, easing = EaseInOut)
+        targetValue = if (viewState.buttonClicked.value) 0.dp else 24.dp,
+        tween(400, easing = EaseInOut)
     )
     val textAlpha by animateFloatAsState(
-        targetValue = if (textAnimation) 0f else 1f,
+        targetValue = if (viewState.textAnimation.value) 0f else 1f,
         tween(400, easing = EaseInOut)
     )
     val textOffset by animateDpAsState(
-        targetValue = if (textAnimation) 60.dp else 0.dp,
+        targetValue = if (viewState.textAnimation.value) 60.dp else 0.dp,
         tween(400, easing = EaseInOut)
+    )
+    val buttonAlpha by animateFloatAsState(
+        targetValue = if (viewState.buttonClicked.value) 0f else 1f,
+        tween(400, easing = EaseInOut)
+    )
+    val mapAlpha by animateFloatAsState(
+        targetValue = if (viewState.buttonClicked.value) 1f else 0f,
+        tween(800, easing = EaseInOut)
     )
 
     Box(
@@ -144,45 +138,50 @@ fun HomeScreen(
                     .clickable(
                         interactionSource = MutableInteractionSource(),
                         onClick = {
-                            coroutineScope.launch {
-                                textAnimation = true
-                                delay(200)
-                                buttonClicked = true
-                                viewModel.onIntent(HomeScreenIntents.PressCalculateNew)
-                                delay(600)
-                                textAnimation = false
-                                buttonClicked = false
-                            }
+                            viewModel.onIntent(HomeScreenIntents.OpenMap)
                         },
                         indication = null
                     )
-                    .background(Color.Black)
                     .width(buttonWidth)
                     .height(buttonHeight)
-                    .padding(24.dp)
             ) {
-                Text(
-                    text = "New calculation",
-                    style = ZillaSlab,
-                    color = White1,
-                    fontSize = 20.sp,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .offset(x = textOffset)
-                        .alpha(textAlpha)
-                )
 
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_up_chevron),
-                    contentDescription = "",
-                    tint = Color.Unspecified,
+                if (viewState.mapVisible.value) {
+                    MapScreen(viewModel = viewModel, mapAlpha)
+                }
+
+
+                Box(
                     modifier = Modifier
-                        .padding(end = 40.dp)
-                        .align(Alignment.CenterEnd)
-                        .offset(x = textOffset/*, y = chevronPositionLoop.dp*/)
+                        .alpha(buttonAlpha)
+                        .background(Color.Black)
+                        .fillMaxWidth()
+                        .fillMaxSize()
+                        .padding(24.dp)
+                ) {
+                    Text(
+                        text = "New calculation",
+                        style = ZillaSlab,
+                        color = White1,
+                        fontSize = 20.sp,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .offset(x = textOffset)
+                            .alpha(textAlpha)
+                    )
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_up_chevron),
+                        contentDescription = "",
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                            .padding(end = 40.dp)
+                            .align(Alignment.CenterEnd)
+                            .offset(x = textOffset/*, y = chevronPositionLoop.dp*/)
 //                        .alpha(chevronAlphaLoop)
-                        .alpha(textAlpha)
-                )
+                            .alpha(textAlpha)
+                    )
+                }
             }
         }
     }

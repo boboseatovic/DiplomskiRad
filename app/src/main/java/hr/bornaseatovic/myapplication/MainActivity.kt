@@ -18,8 +18,6 @@ import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
-import hr.bornaseatovic.myapplication.main.features.calculation.map.MapScreen
-import hr.bornaseatovic.myapplication.main.features.calculator.CalculatorScreen
 import hr.bornaseatovic.myapplication.main.features.calculator.FourthScreen
 import hr.bornaseatovic.myapplication.main.features.home.HomeScreen
 import hr.bornaseatovic.myapplication.main.navigation.NavigationManager
@@ -89,13 +87,6 @@ class MainActivity : ComponentActivity() {
                         FourthScreen {
                             navController.popBackStack("home_route", true, true)
                         }
-                    }
-                    composable(
-                        route = HomeDestinations.mapScreen(),
-                        enterTransition = {
-                            EnterTransition.None
-                        }) {
-                        MapScreen()
                     }
                 }
             }
