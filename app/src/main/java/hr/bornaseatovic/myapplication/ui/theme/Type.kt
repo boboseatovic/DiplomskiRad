@@ -75,11 +75,27 @@ val Montserrat: TextStyle
         )
     }
 
-val Montserrat_Light: TextStyle
+val Montserrat_ExtraLight: TextStyle
     @Composable
     get() {
         return TextStyle(
             fontFamily = FontFamily(Font(R.font.montserrat_extra_light))
+        )
+    }
+
+val Montserrat_Light: TextStyle
+    @Composable
+    get() {
+        return TextStyle(
+            fontFamily = FontFamily(Font(R.font.montserrat_light))
+        )
+    }
+
+val Montserrat_Thin: TextStyle
+    @Composable
+    get() {
+        return TextStyle(
+            fontFamily = FontFamily(Font(R.font.montserrat_thin))
         )
     }
 
@@ -96,5 +112,13 @@ val ZillaSlab_SemiBold: TextStyle
     get() {
         return TextStyle(
             fontFamily = FontFamily(Font(R.font.zilla_slab_semi_bold))
+        )
+    }
+
+val Poppins_Regular: TextStyle
+    @Composable
+    get() {
+        return TextStyle(
+            fontFamily = FontFamily(Font(R.font.poppins_regular))
         )
     }

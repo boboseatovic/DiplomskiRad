@@ -78,11 +78,11 @@ fun HomeScreen(
             .navigationBarsPadding()
             .fillMaxSize()
             .background(MaterialTheme.colors.background)
-            .padding(24.dp)
+            .padding(30.dp)
     ) {
         Column(
             modifier = Modifier
-                .padding(top = 30.dp)
+                .padding(top = 60.dp)
                 .wrapContentSize()
         ) {
             AnimatedVisibility(
@@ -101,7 +101,6 @@ fun HomeScreen(
                     fontSize = 48.sp,
                     color = Color.Black,
                     modifier = Modifier
-                        .padding(bottom = 3.dp)
                         .alpha(textAlpha)
                 )
             }
