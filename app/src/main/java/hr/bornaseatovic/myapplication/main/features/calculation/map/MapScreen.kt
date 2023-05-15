@@ -2,6 +2,7 @@ package hr.bornaseatovic.myapplication.main.features.calculation.map
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -29,6 +30,8 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import hr.bornaseatovic.myapplication.R
 import hr.bornaseatovic.myapplication.ui.theme.Poppins_Regular
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun MapScreen(
@@ -36,9 +39,56 @@ fun MapScreen(
 ) {
     val viewState = viewModel.viewState.collectAsState().value
 
+    val coroutineScope = rememberCoroutineScope()
+
     var init by remember {
         mutableStateOf(false)
     }
+
+    var addressButtonPressed by remember {
+        mutableStateOf(false)
+    }
+
+    var coordinatesButtonPressed by remember {
+        mutableStateOf(true)
+    }
+
+    var drawPolygonButtonPressed by remember {
+        mutableStateOf(false)
+    }
+
+    var animateSearch by remember {
+        mutableStateOf(false)
+    }
+
+    val searchAlpha by animateFloatAsState(
+        targetValue = if (animateSearch) 0.5f else 0f,
+        tween(200, easing = EaseInOut)
+    )
+
+    var animateCoordinates by remember {
+        mutableStateOf(false)
+    }
+
+    val coordinatesAlpha by animateFloatAsState(
+        targetValue = if (!animateCoordinates) 0.5f else 0f,
+        tween(200, easing = EaseInOut)
+    )
+
+    val coordinatesFieldWidth by animateDpAsState(
+        targetValue = if (drawPolygonButtonPressed) 150.dp else if (!animateCoordinates) 130.dp else 210.dp,
+        tween(200, easing = EaseInOut)
+    )
+
+    val latitudeTextOffset by animateDpAsState(
+        targetValue = if (!animateCoordinates) 0.dp else 80.dp,
+        tween(200, easing = EaseInOut)
+    )
+
+    val closeButtonWidth by animateDpAsState(
+        targetValue = if (drawPolygonButtonPressed) 0.dp else 45.dp,
+        tween(200, easing = EaseInOut)
+    )
 
     LaunchedEffect(key1 = Unit, block = { init = true })
 
@@ -76,165 +126,280 @@ fun MapScreen(
             cameraPositionState = cameraPositionState,
             uiSettings = uiSettings
         ) {}
-        Row(
+        Column(
             modifier = Modifier
-                .padding(horizontal = 30.dp, vertical = 40.dp)
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .navigationBarsPadding()
+                .padding(30.dp)
         ) {
-            AnimatedVisibility(
-                modifier = Modifier.weight(1f),
-                visible = init,
-                enter = slideInHorizontally(
-                    initialOffsetX = { 1500 },
-                    animationSpec = tween(400, 500, easing = EaseInOut)
-                )
+            Row(
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .height(60.dp)
-                        .weight(1f)
-                        .background(MaterialTheme.colors.background),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_search),
-                        contentDescription = "",
-                        tint = Color.Unspecified,
-                        modifier = Modifier
-                            .padding(start = 15.dp)
-                            .offset(y = 4.dp)
-                            .size(28.dp)
+                AnimatedVisibility(
+                    modifier = Modifier.weight(1f),
+                    visible = init,
+                    enter = slideInVertically(
+                        initialOffsetY = { -4000 },
+                        animationSpec = tween(700, 400, easing = EaseInOut)
                     )
-                    Text(
-                        text = "Search",
-                        style = Poppins_Regular,
-                        fontSize = 13.sp,
-                        color = Color.Black,
+                ) {
+                    if (coordinatesButtonPressed) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            Row(
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .padding(end = 10.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .height(45.dp)
+                                    .width(coordinatesFieldWidth)
+                                    .background(MaterialTheme.colors.background),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Latitude",
+                                    style = Poppins_Regular,
+                                    fontSize = 13.sp,
+                                    color = Color.Black,
+                                    modifier = Modifier
+                                        .padding(start = 20.dp)
+                                        .alpha(coordinatesAlpha)
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .height(45.dp)
+                                    .width(coordinatesFieldWidth)
+                                    .background(MaterialTheme.colors.background),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Longitude",
+                                    style = Poppins_Regular,
+                                    fontSize = 13.sp,
+                                    color = Color.Black,
+                                    modifier = Modifier
+                                        .offset(x = latitudeTextOffset)
+                                        .padding(start = 20.dp)
+                                        .alpha(coordinatesAlpha)
+                                )
+                            }
+                        }
+                    }
+
+                    if (addressButtonPressed) {
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .height(45.dp)
+                                .weight(1f)
+                                .background(MaterialTheme.colors.background),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_search),
+                                contentDescription = "",
+                                tint = Color.Unspecified,
+                                modifier = Modifier
+                                    .padding(start = 15.dp)
+                                    .alpha(searchAlpha)
+                                    .offset(y = 4.dp)
+                                    .size(28.dp)
+                            )
+                            Text(
+                                text = "Search",
+                                style = Poppins_Regular,
+                                fontSize = 13.sp,
+                                color = Color.Black,
+                                modifier = Modifier
+                                    .padding(start = 10.dp)
+                                    .alpha(searchAlpha)
+                            )
+                        }
+                    }
+                }
+
+                AnimatedVisibility(
+                    visible = init,
+                    enter = slideInVertically(
+                        initialOffsetY = { -4000 },
+                        animationSpec = tween(700, 400, easing = EaseInOut)
+                    )
+                ) {
+                    Box(
                         modifier = Modifier
                             .padding(start = 10.dp)
-                            .alpha(0.5f)
-                    )
-                }
-            }
-
-            AnimatedVisibility(
-                visible = init,
-                enter = slideInHorizontally(
-                    initialOffsetX = { 1000 },
-                    animationSpec = tween(400, 650, easing = EaseInOut)
-                )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(start = 10.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .clickable {
-                            viewModel.onIntent(MapScreenIntents.GoBack)
-                        }
-                        .size(60.dp)
-                        .background(Color.Black)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_close),
-                        contentDescription = "",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.align(
-                            Alignment.Center
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable {
+                                viewModel.onIntent(MapScreenIntents.GoBack)
+                            }
+                            .height(45.dp)
+                            .width(closeButtonWidth)
+                            .background(Color.Black)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_close),
+                            contentDescription = "",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.align(
+                                Alignment.Center
+                            )
                         )
-                    )
+                    }
                 }
             }
-        }
 
-        Row(
-            modifier = Modifier
-                .padding(30.dp)
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            verticalAlignment = Alignment.Bottom
-        ) {
             Spacer(modifier = Modifier.weight(1f))
 
-            AnimatedVisibility(
-                visible = settingsButtonClicked,
-                enter = expandHorizontally(
-                    initialWidth = { 0 },
-                    animationSpec = tween(500)
-                ),
-                exit = shrinkHorizontally(
-                    targetWidth = { 0 },
-                    animationSpec = tween(500)
-                )
-
+            Row(
+                modifier = Modifier
+                    .padding(bottom = 10.dp)
+                    .fillMaxWidth()
+                    .wrapContentHeight()
             ) {
-                Row(modifier = Modifier.wrapContentSize()) {
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 12.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .clickable {
-                                settingsButtonClicked = false
-                            }
-                            .background(MaterialTheme.colors.background)
-                            .height(50.dp)
-                            .width(75.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_map_pin),
-                            contentDescription = "",
-                            tint = Color.Unspecified,
-                            modifier = Modifier.align(
-                                Alignment.Center
-                            )
-                        )
-                    }
+                Spacer(modifier = Modifier.weight(1f))
 
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 12.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .clickable {
-                                settingsButtonClicked = false
-                            }
-                            .background(MaterialTheme.colors.background)
-                            .height(50.dp)
-                            .width(75.dp)
+                AnimatedVisibility(
+                    visible = init,
+                    enter = slideInVertically(
+                        initialOffsetY = { 500 },
+                        animationSpec = tween(400, 600, easing = EaseInOut)
+                    )
+                ) {
+                    Box(modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable {
+                            drawPolygonButtonPressed = !drawPolygonButtonPressed
+                        }
+                        .background(Color.Black)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_globe),
+                            painter = painterResource(id = R.drawable.ic_draw_polygon),
                             contentDescription = "",
                             tint = Color.Unspecified,
-                            modifier = Modifier.align(
-                                Alignment.Center
-                            )
+                            modifier = Modifier
+                                .align(Alignment.Center)
+
                         )
                     }
                 }
             }
 
-            Box(modifier = Modifier
-                .size(60.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .clickable {
-                    settingsButtonClicked = !settingsButtonClicked
-                }
-                .background(Color.Black)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                verticalAlignment = Alignment.Bottom
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_gear),
-                    contentDescription = "",
-                    tint = Color.Unspecified,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .rotate(gearRotationDegree)
-                )
-            }
+                Spacer(modifier = Modifier.weight(1f))
 
+                AnimatedVisibility(
+                    visible = settingsButtonClicked,
+                    enter = expandHorizontally(
+                        initialWidth = { 0 },
+                        animationSpec = tween(500)
+                    ),
+                    exit = shrinkHorizontally(
+                        targetWidth = { 0 },
+                        animationSpec = tween(500)
+                    )
+
+                ) {
+                    Row(modifier = Modifier.wrapContentSize()) {
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 12.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable {
+                                    coroutineScope.launch {
+                                        animateCoordinates = true
+                                        delay(200)
+                                        coordinatesButtonPressed = false
+                                        addressButtonPressed = true
+                                        animateSearch = true
+                                    }
+                                }
+                                .background(MaterialTheme.colors.background)
+                                .height(50.dp)
+                                .width(75.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_map_pin),
+                                contentDescription = "",
+                                tint = Color.Unspecified,
+                                modifier = Modifier
+                                    .align(
+                                        Alignment.Center
+                                    )
+                                    .alpha(if (addressButtonPressed) 1f else 0.4f)
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 12.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable {
+                                    coroutineScope.launch {
+                                        animateSearch = false
+                                        delay(200)
+                                        addressButtonPressed = false
+                                        coordinatesButtonPressed = true
+                                        animateCoordinates = false
+                                    }
+                                }
+                                .background(MaterialTheme.colors.background)
+                                .height(50.dp)
+                                .width(75.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_globe),
+                                contentDescription = "",
+                                tint = Color.Unspecified,
+                                modifier = Modifier
+                                    .align(
+                                        Alignment.Center
+                                    )
+                                    .alpha(if (coordinatesButtonPressed) 1f else 0.4f)
+                            )
+                        }
+                    }
+                }
+
+                AnimatedVisibility(
+                    visible = init,
+                    enter = slideInVertically(
+                        initialOffsetY = { 500 },
+                        animationSpec = tween(400, 700, easing = EaseInOut)
+                    )
+                ) {
+                    Box(modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable {
+                            settingsButtonClicked = !settingsButtonClicked
+                        }
+                        .background(Color.Black)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_gear),
+                            contentDescription = "",
+                            tint = Color.Unspecified,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .rotate(gearRotationDegree)
+                        )
+                    }
+                }
+
+            }
         }
     }
 }
