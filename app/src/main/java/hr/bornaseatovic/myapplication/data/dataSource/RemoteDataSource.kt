@@ -24,9 +24,9 @@ class RemoteDataSource(
         }
     }
 
-    suspend fun fetchGeolocation() = flow {
+    suspend fun fetchGeolocation(searchValue: String) = flow {
         try {
-            val response = geolocationAPI.getGeolocation()
+            val response = geolocationAPI.getGeolocation(query = searchValue)
             emit(Resource.Success(response.toGeolocationPresentation()))
         } catch (e: java.lang.Exception) {
             emit(Resource.Error(errorType = ErrorParser.parseError(e)))

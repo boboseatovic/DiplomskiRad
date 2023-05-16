@@ -4,5 +4,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 
 data class HomeScreenViewState(
-    var textAnimation: MutableState<Boolean> = mutableStateOf(false)
+    var textAnimation: MutableState<Boolean> = mutableStateOf(false),
+    val text: String = "Nesto"
 )

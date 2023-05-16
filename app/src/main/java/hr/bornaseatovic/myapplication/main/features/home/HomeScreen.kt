@@ -124,6 +124,8 @@ fun HomeScreen(
                 )
             }
         }
+        
+        Text(text = viewState.text, color = Color.Black)
 
         Spacer(modifier = Modifier.weight(1f))
 

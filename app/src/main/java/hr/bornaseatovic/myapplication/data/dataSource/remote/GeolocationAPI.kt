@@ -10,6 +10,6 @@ interface GeolocationAPI {
     @GET("forward")
     suspend fun getGeolocation(
         @Query("access_key") accessKey : String = "6c4611357976fc81217eaddcb9f5964f",
-        @Query("query") query: String = "Našička ulica 61D"
+        @Query("query") query: String
     ): GeolocationResponse
 }

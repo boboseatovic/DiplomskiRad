@@ -1,6 +1,5 @@
 package hr.bornaseatovic.myapplication.main.features.calculation.map
 
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateDpAsState
@@ -10,8 +9,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -27,24 +24,19 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import hr.bornaseatovic.myapplication.R
-import hr.bornaseatovic.myapplication.ui.states.CalculatorFieldState
 import hr.bornaseatovic.myapplication.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -121,6 +113,19 @@ fun MapScreen(
     LaunchedEffect(key1 = Unit, block = { init = true })
 
 
+    var launchCameraUpdate by remember {
+        mutableStateOf(false)
+    }
+
+    var location by remember {
+        viewState.location
+    }
+
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(location, 19f)
+    }
+
+
     var latitudePlaceholderVisible by remember {
         mutableStateOf(true)
     }
@@ -128,17 +133,9 @@ fun MapScreen(
     var longitudePlaceholderVisible by remember {
         mutableStateOf(true)
     }
-    var myLocation by remember {
-        mutableStateOf(
-            LatLng(
-                45.8150,
-                15.9819
-            )
-        )
-    }
 
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(myLocation, 13f)
+    var searchPlaceholderVisible by remember {
+        mutableStateOf(true)
     }
 
 
@@ -294,7 +291,7 @@ fun MapScreen(
                                         searchPressed = false
                                         longitudePlaceholderVisible = true
                                         if (viewState.latitudeValue.isNotBlank() && viewState.longitudeValue.isNotBlank()) {
-                                            myLocation = LatLng(
+                                            location = LatLng(
                                                 viewState.latitudeValue.toDouble(),
                                                 viewState.longitudeValue.toDouble()
                                             )
@@ -336,9 +333,6 @@ fun MapScreen(
                         Row(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
-                                .clickable {
-                                    searchPressed = !searchPressed
-                                }
                                 .height(45.dp)
                                 .weight(1f)
                                 .background(MaterialTheme.colors.background),
@@ -349,20 +343,57 @@ fun MapScreen(
                                 contentDescription = "",
                                 tint = Color.Unspecified,
                                 modifier = Modifier
-                                    .padding(start = 15.dp)
+                                    .padding(start = 15.dp, end = 10.dp)
                                     .alpha(searchAlpha)
                                     .offset(y = 4.dp)
                                     .size(28.dp)
                             )
-                            Text(
-                                text = "Search",
-                                style = Poppins_Regular,
-                                fontSize = 11.sp,
-                                color = Color.Black,
+                            BasicTextField(
                                 modifier = Modifier
-                                    .padding(start = 10.dp)
-                                    .alpha(searchAlpha)
-                            )
+                                    .weight(1f)
+                                    .onFocusChanged {
+                                        if (it.isFocused) {
+                                            searchPlaceholderVisible = false
+                                            searchPressed = true
+                                        }
+                                    },
+                                value = viewState.searchValue,
+                                singleLine = true,
+                                onValueChange = {
+                                    viewModel.onIntent(MapScreenIntents.ChangeSearchValue(it))
+                                },
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                keyboardActions = KeyboardActions(onSearch = {
+                                    viewModel.onIntent(MapScreenIntents.Search)
+                                    keyboardController?.hide()
+                                    focusLocalManager.clearFocus(true)
+                                    searchPressed = false
+                                    searchPlaceholderVisible = true
+                                    coroutineScope.launch {
+                                        cameraPositionState.animate(
+                                            CameraUpdateFactory.newLatLng(
+                                                viewState.location.value
+                                            )
+                                        )
+                                    }
+                                }),
+                                textStyle = Poppins_Regular_11.copy(
+                                    color = Color.Black,
+                                ),
+                                maxLines = 1
+                            ) { innerPaddingValue ->
+                                if (viewState.searchValue.isBlank() && searchPlaceholderVisible) {
+                                    Text(
+                                        text = "Search",
+                                        style = Poppins_Regular,
+                                        fontSize = 11.sp,
+                                        color = Color.Black,
+                                        modifier = Modifier
+                                            .alpha(if (viewState.searchValue.isBlank()) searchAlpha else 1f)
+                                    )
+                                }
+                                innerPaddingValue()
+                            }
                         }
                     }
                 }
