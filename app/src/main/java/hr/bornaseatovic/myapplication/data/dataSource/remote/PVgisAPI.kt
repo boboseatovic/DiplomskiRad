@@ -1,6 +1,6 @@
 package hr.bornaseatovic.myapplication.data.dataSource.remote
 
-import hr.bornaseatovic.myapplication.data.model.remote.PVCalculationsResponse
+import hr.bornaseatovic.myapplication.data.model.remote.pvGIS.PVCalculationsResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -21,5 +21,3 @@ interface PVgisAPI {
 
     ): PVCalculationsResponse
 }
-
-//api/PVcalc?lat=45&lon=8&peakpower=1&loss=14&outputformat=json

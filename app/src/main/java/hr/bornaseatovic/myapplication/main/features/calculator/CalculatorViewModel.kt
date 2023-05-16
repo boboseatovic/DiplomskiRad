@@ -1,20 +1,17 @@
 package hr.bornaseatovic.myapplication.main.features.calculator
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hr.bornaseatovic.myapplication.common.base.BaseViewModel
 import hr.bornaseatovic.myapplication.data.Resource
-import hr.bornaseatovic.myapplication.data.dataSource.PVGISDataSource
+import hr.bornaseatovic.myapplication.data.dataSource.RemoteDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CalculatorViewModel @Inject constructor(
-    private val pvgisDataSource: PVGISDataSource
+    private val remoteDataSource: RemoteDataSource
 ) : BaseViewModel<CalculatorViewState, CalculatorIntents>() {
     override val initialState = CalculatorViewState()
     override fun onIntent(intent: CalculatorIntents) {
@@ -62,7 +59,7 @@ class CalculatorViewModel @Inject constructor(
 
             CalculatorIntents.PressAButton -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    pvgisDataSource.fetchPVCalculations(
+                    remoteDataSource.fetchPVCalculations(
                         internalState.value.geoSirina.toFloat(),
                         internalState.value.geoDuzina.toFloat()
                     ).collect { result ->

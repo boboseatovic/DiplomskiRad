@@ -9,14 +9,16 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import hr.bornaseatovic.myapplication.data.dataSource.LocalDataSource
-import hr.bornaseatovic.myapplication.data.dataSource.PVGISDataSource
+import hr.bornaseatovic.myapplication.data.dataSource.RemoteDataSource
 import hr.bornaseatovic.myapplication.data.dataSource.local.Database
+import hr.bornaseatovic.myapplication.data.dataSource.remote.GeolocationAPI
 import hr.bornaseatovic.myapplication.data.dataSource.remote.PVgisAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import javax.inject.Singleton
 
 
@@ -33,6 +35,25 @@ object AppModule {
             Database.DATABASE_NAME
         ).build()
     }
+    @Provides
+    @Singleton
+    fun providePVgisAPI(): PVgisAPI {
+        return Retrofit.Builder()
+            .baseUrl("https://re.jrc.ec.europa.eu/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(PVgisAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGeolocationAPI(): GeolocationAPI {
+        return Retrofit.Builder()
+            .baseUrl("http://api.positionstack.com/v1/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(GeolocationAPI::class.java)
+    }
 
     @Provides
     @Singleton
@@ -44,20 +65,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePVGISDataSource(
-        pVgisAPI: PVgisAPI
-    ): PVGISDataSource {
-        return  PVGISDataSource(pVgisAPI)
-    }
-
-    @Provides
-    @Singleton
-    fun providePVgisAPI(): PVgisAPI {
-        return Retrofit.Builder()
-            .baseUrl("https://re.jrc.ec.europa.eu/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(PVgisAPI::class.java)
+    fun provideRemoteDataSource(
+        pVgisAPI: PVgisAPI,
+        geolocationAPI: GeolocationAPI
+    ): RemoteDataSource {
+        return  RemoteDataSource(pVgisAPI, geolocationAPI)
     }
 
     @Singleton
