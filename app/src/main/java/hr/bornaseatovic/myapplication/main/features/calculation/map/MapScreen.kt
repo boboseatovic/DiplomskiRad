@@ -38,6 +38,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.gms.maps.CameraUpdate
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -57,10 +59,6 @@ fun MapScreen(
     val coroutineScope = rememberCoroutineScope()
 
     var init by remember {
-        mutableStateOf(false)
-    }
-
-    var coordinatesTextEnabled by remember {
         mutableStateOf(false)
     }
 
@@ -110,8 +108,8 @@ fun MapScreen(
         tween(200, easing = EaseInOut)
     )
 
-    val latitudeTextOffset by animateDpAsState(
-        targetValue = if (!animateCoordinates) 0.dp else 80.dp,
+    val longitudeTextOffset by animateDpAsState(
+        targetValue = if (!animateCoordinates) 0.dp else 40.dp,
         tween(200, easing = EaseInOut)
     )
 
@@ -121,17 +119,28 @@ fun MapScreen(
     )
 
     LaunchedEffect(key1 = Unit, block = { init = true })
-    LaunchedEffect(coordinatesTextEnabled) {
-        if (coordinatesTextEnabled) {
-            focusRequester.requestFocus()
-        }
+
+
+    var latitudePlaceholderVisible by remember {
+        mutableStateOf(true)
     }
 
-    val myLocation = LatLng(45.8150, 15.9819)
+    var longitudePlaceholderVisible by remember {
+        mutableStateOf(true)
+    }
+    var myLocation by remember {
+        mutableStateOf(
+            LatLng(
+                45.8150,
+                15.9819
+            )
+        )
+    }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(myLocation, 13f)
     }
+
 
     var uiSettings by remember {
         mutableStateOf(
@@ -162,10 +171,12 @@ fun MapScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.Black)
     ) {
         GoogleMap(
             modifier = Modifier
-                .matchParentSize(),
+                .matchParentSize()
+                .alpha(if (drawPolygonButtonPressed) 0.5f else 1f),
             cameraPositionState = cameraPositionState,
             uiSettings = uiSettings,
             properties = properties
@@ -203,47 +214,50 @@ fun MapScreen(
                                     .align(Alignment.CenterStart)
                                     .padding(end = 10.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .clickable {
-                                        searchPressed = true
-                                        coordinatesTextEnabled = true
-                                    }
                                     .height(45.dp)
                                     .width(coordinatesFieldWidth)
                                     .background(MaterialTheme.colors.background)
                                     .padding(horizontal = 15.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                if (searchPressed) {
-                                    BasicTextField(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .focusRequester(focusRequester),
-                                        value = viewState.searchValue,
-                                        singleLine = true,
-                                        onValueChange = {
-                                            viewModel.onIntent(MapScreenIntents.Search(it))
+                                BasicTextField(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .onFocusChanged {
+                                            if (it.isFocused) {
+                                                latitudePlaceholderVisible = false
+                                                searchPressed = true
+                                            }
                                         },
-                                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                        keyboardActions = KeyboardActions(onDone = {
-                                            keyboardController?.hide()
-                                            focusLocalManager.clearFocus(true)
-                                            searchPressed = false
-                                            coordinatesTextEnabled = false
-                                        }),
-                                        textStyle = Poppins_Regular_11.copy(
-                                            color = Color.Black,
-                                        ),
-                                        maxLines = 1
-                                    )
-                                } else {
-                                    Text(
-                                        text = if (viewState.searchValue.isBlank()) "Latitude" else viewState.searchValue,
-                                        style = Poppins_Regular,
-                                        fontSize = 11.sp,
+                                    value = viewState.latitudeValue,
+                                    singleLine = true,
+                                    onValueChange = {
+                                        viewModel.onIntent(MapScreenIntents.InputLatitude(it))
+                                    },
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        keyboardController?.hide()
+                                        focusLocalManager.clearFocus(true)
+                                        searchPressed = false
+                                        latitudePlaceholderVisible = true
+                                        focusRequester.requestFocus()
+                                    }),
+                                    textStyle = Poppins_Regular_11.copy(
                                         color = Color.Black,
-                                        modifier = Modifier
-                                            .alpha(if (viewState.searchValue.isBlank()) coordinatesAlpha else 1f)
-                                    )
+                                    ),
+                                    maxLines = 1
+                                ) { innerPaddingValue ->
+                                    if (viewState.latitudeValue.isBlank() && latitudePlaceholderVisible) {
+                                        Text(
+                                            text = "Latitude",
+                                            style = Poppins_Regular,
+                                            fontSize = 11.sp,
+                                            color = Color.Black,
+                                            modifier = Modifier
+                                                .alpha(if (viewState.latitudeValue.isBlank()) coordinatesAlpha else 1f)
+                                        )
+                                    }
+                                    innerPaddingValue()
                                 }
                             }
 
@@ -251,24 +265,69 @@ fun MapScreen(
                                 modifier = Modifier
                                     .align(Alignment.CenterEnd)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .clickable {
-                                        searchPressed = !searchPressed
-                                    }
                                     .height(45.dp)
                                     .width(coordinatesFieldWidth)
-                                    .background(MaterialTheme.colors.background),
+                                    .background(MaterialTheme.colors.background)
+                                    .padding(horizontal = 15.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "Longitude",
-                                    style = Poppins_Regular,
-                                    fontSize = 11.sp,
-                                    color = Color.Black,
+                                BasicTextField(
                                     modifier = Modifier
-                                        .offset(x = latitudeTextOffset)
-                                        .padding(start = 20.dp)
-                                        .alpha(coordinatesAlpha)
-                                )
+                                        .weight(1f)
+                                        .offset(x = longitudeTextOffset)
+                                        .focusRequester(focusRequester)
+                                        .onFocusChanged {
+                                            if (it.isFocused) {
+                                                longitudePlaceholderVisible = false
+                                                searchPressed = true
+                                            }
+                                        },
+                                    value = viewState.longitudeValue,
+                                    singleLine = true,
+                                    onValueChange = {
+                                        viewModel.onIntent(MapScreenIntents.InputLongitude(it))
+                                    },
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        keyboardController?.hide()
+                                        focusLocalManager.clearFocus(true)
+                                        searchPressed = false
+                                        longitudePlaceholderVisible = true
+                                        if (viewState.latitudeValue.isNotBlank() && viewState.longitudeValue.isNotBlank()) {
+                                            myLocation = LatLng(
+                                                viewState.latitudeValue.toDouble(),
+                                                viewState.longitudeValue.toDouble()
+                                            )
+                                        }
+                                        coroutineScope.launch {
+                                            cameraPositionState.animate(
+                                                CameraUpdateFactory.newLatLng(
+                                                    LatLng(
+                                                        viewState.latitudeValue.toDouble(),
+                                                        viewState.longitudeValue.toDouble()
+                                                    )
+                                                ), 1000
+                                            )
+                                        }
+                                    }),
+                                    textStyle = Poppins_Regular_11.copy(
+                                        color = Color.Black,
+                                    ),
+                                    maxLines = 1
+                                ) { innerPaddingValue ->
+                                    if (viewState.longitudeValue.isBlank() && longitudePlaceholderVisible) {
+                                        Text(
+                                            text = "Longitude",
+                                            style = Poppins_Regular,
+                                            fontSize = 11.sp,
+                                            color = Color.Black,
+                                            modifier = Modifier
+                                                .offset(x = longitudeTextOffset)
+                                                .alpha(if (viewState.longitudeValue.isBlank()) coordinatesAlpha else 1f)
+                                        )
+                                    }
+                                    innerPaddingValue()
+                                }
                             }
                         }
                     }
@@ -320,14 +379,18 @@ fun MapScreen(
                             .padding(start = 10.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .clickable {
-                                viewModel.onIntent(MapScreenIntents.GoBack)
+                                if (drawPolygonButtonPressed) {
+                                    drawPolygonButtonPressed = false
+                                } else {
+                                    viewModel.onIntent(MapScreenIntents.GoBack)
+                                }
                             }
                             .height(45.dp)
                             .width(closeButtonWidth)
                             .background(Color.Black)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_close),
+                            painter = painterResource(id = if (drawPolygonButtonPressed) R.drawable.ic_check else R.drawable.ic_close),
                             contentDescription = "",
                             tint = Color.Unspecified,
                             modifier = Modifier.align(
@@ -452,10 +515,14 @@ fun MapScreen(
                 }
 
                 AnimatedVisibility(
-                    visible = init,
+                    visible = init && !drawPolygonButtonPressed,
                     enter = slideInVertically(
                         initialOffsetY = { 500 },
                         animationSpec = tween(400, 600, easing = EaseInOut)
+                    ),
+                    exit = slideOutVertically(
+                        targetOffsetY = { 500 },
+                        animationSpec = tween(400, easing = EaseInOut)
                     )
                 ) {
                     Box(modifier = Modifier
@@ -463,7 +530,8 @@ fun MapScreen(
                         .size(60.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .clickable {
-                            drawPolygonButtonPressed = !drawPolygonButtonPressed
+                            drawPolygonButtonPressed = true
+                            settingsButtonClicked = false
                         }
                         .background(Yellow1)
                     ) {

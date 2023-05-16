@@ -17,9 +17,14 @@ class MapScreenViewModel @Inject constructor(
             MapScreenIntents.GoBack -> {
                 navigationManager.goBack()
             }
-            is MapScreenIntents.Search -> {
+            is MapScreenIntents.InputLatitude -> {
                 internalState.value = internalState.value.copy(
-                    searchValue = intent.searchValue
+                    latitudeValue = intent.latitudeValue
+                )
+            }
+            is MapScreenIntents.InputLongitude -> {
+                internalState.value = internalState.value.copy(
+                    longitudeValue = intent.longitudeValue
                 )
             }
         }
