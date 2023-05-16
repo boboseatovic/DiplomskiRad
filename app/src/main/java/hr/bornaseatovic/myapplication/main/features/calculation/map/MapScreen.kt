@@ -1,38 +1,53 @@
 package hr.bornaseatovic.myapplication.main.features.calculation.map
 
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.*
 import hr.bornaseatovic.myapplication.R
-import hr.bornaseatovic.myapplication.ui.theme.Poppins_Regular
+import hr.bornaseatovic.myapplication.ui.states.CalculatorFieldState
+import hr.bornaseatovic.myapplication.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun MapScreen(
     viewModel: MapScreenViewModel = hiltViewModel()
@@ -45,6 +60,17 @@ fun MapScreen(
         mutableStateOf(false)
     }
 
+    var coordinatesTextEnabled by remember {
+        mutableStateOf(false)
+    }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusLocalManager = LocalFocusManager.current
+
+    val focusRequester = remember {
+        FocusRequester()
+    }
+
     var addressButtonPressed by remember {
         mutableStateOf(false)
     }
@@ -54,6 +80,10 @@ fun MapScreen(
     }
 
     var drawPolygonButtonPressed by remember {
+        mutableStateOf(false)
+    }
+
+    var searchPressed by remember {
         mutableStateOf(false)
     }
 
@@ -76,7 +106,7 @@ fun MapScreen(
     )
 
     val coordinatesFieldWidth by animateDpAsState(
-        targetValue = if (drawPolygonButtonPressed) 150.dp else if (!animateCoordinates) 130.dp else 210.dp,
+        targetValue = if (searchPressed) 150.dp else if (!animateCoordinates) 130.dp else 210.dp,
         tween(200, easing = EaseInOut)
     )
 
@@ -86,16 +116,21 @@ fun MapScreen(
     )
 
     val closeButtonWidth by animateDpAsState(
-        targetValue = if (drawPolygonButtonPressed) 0.dp else 45.dp,
+        targetValue = if (searchPressed) 0.dp else 45.dp,
         tween(200, easing = EaseInOut)
     )
 
     LaunchedEffect(key1 = Unit, block = { init = true })
+    LaunchedEffect(coordinatesTextEnabled) {
+        if (coordinatesTextEnabled) {
+            focusRequester.requestFocus()
+        }
+    }
 
     val myLocation = LatLng(45.8150, 15.9819)
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(myLocation, 10f)
+        position = CameraPosition.fromLatLngZoom(myLocation, 13f)
     }
 
     var uiSettings by remember {
@@ -103,6 +138,14 @@ fun MapScreen(
             MapUiSettings(
                 compassEnabled = false,
                 zoomControlsEnabled = false
+            )
+        )
+    }
+
+    var properties by remember {
+        mutableStateOf(
+            MapProperties(
+                mapType = MapType.SATELLITE
             )
         )
     }
@@ -124,7 +167,8 @@ fun MapScreen(
             modifier = Modifier
                 .matchParentSize(),
             cameraPositionState = cameraPositionState,
-            uiSettings = uiSettings
+            uiSettings = uiSettings,
+            properties = properties
         ) {}
         Column(
             modifier = Modifier
@@ -139,12 +183,17 @@ fun MapScreen(
                     .height(IntrinsicSize.Min),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Spacer(modifier = Modifier.weight(1f))
                 AnimatedVisibility(
-                    modifier = Modifier.weight(1f),
-                    visible = init,
+                    modifier = Modifier.weight(100f),
+                    visible = init && !drawPolygonButtonPressed,
                     enter = slideInVertically(
                         initialOffsetY = { -4000 },
-                        animationSpec = tween(700, 400, easing = EaseInOut)
+                        animationSpec = tween(700, if (init) 400 else 0, easing = EaseInOut)
+                    ),
+                    exit = slideOutVertically(
+                        targetOffsetY = { -4000 },
+                        animationSpec = tween(700, easing = EaseInOut)
                     )
                 ) {
                     if (coordinatesButtonPressed) {
@@ -154,26 +203,57 @@ fun MapScreen(
                                     .align(Alignment.CenterStart)
                                     .padding(end = 10.dp)
                                     .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        searchPressed = true
+                                        coordinatesTextEnabled = true
+                                    }
                                     .height(45.dp)
                                     .width(coordinatesFieldWidth)
-                                    .background(MaterialTheme.colors.background),
+                                    .background(MaterialTheme.colors.background)
+                                    .padding(horizontal = 15.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "Latitude",
-                                    style = Poppins_Regular,
-                                    fontSize = 13.sp,
-                                    color = Color.Black,
-                                    modifier = Modifier
-                                        .padding(start = 20.dp)
-                                        .alpha(coordinatesAlpha)
-                                )
+                                if (searchPressed) {
+                                    BasicTextField(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .focusRequester(focusRequester),
+                                        value = viewState.searchValue,
+                                        singleLine = true,
+                                        onValueChange = {
+                                            viewModel.onIntent(MapScreenIntents.Search(it))
+                                        },
+                                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                        keyboardActions = KeyboardActions(onDone = {
+                                            keyboardController?.hide()
+                                            focusLocalManager.clearFocus(true)
+                                            searchPressed = false
+                                            coordinatesTextEnabled = false
+                                        }),
+                                        textStyle = Poppins_Regular_11.copy(
+                                            color = Color.Black,
+                                        ),
+                                        maxLines = 1
+                                    )
+                                } else {
+                                    Text(
+                                        text = if (viewState.searchValue.isBlank()) "Latitude" else viewState.searchValue,
+                                        style = Poppins_Regular,
+                                        fontSize = 11.sp,
+                                        color = Color.Black,
+                                        modifier = Modifier
+                                            .alpha(if (viewState.searchValue.isBlank()) coordinatesAlpha else 1f)
+                                    )
+                                }
                             }
 
                             Row(
                                 modifier = Modifier
                                     .align(Alignment.CenterEnd)
                                     .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        searchPressed = !searchPressed
+                                    }
                                     .height(45.dp)
                                     .width(coordinatesFieldWidth)
                                     .background(MaterialTheme.colors.background),
@@ -182,7 +262,7 @@ fun MapScreen(
                                 Text(
                                     text = "Longitude",
                                     style = Poppins_Regular,
-                                    fontSize = 13.sp,
+                                    fontSize = 11.sp,
                                     color = Color.Black,
                                     modifier = Modifier
                                         .offset(x = latitudeTextOffset)
@@ -197,6 +277,9 @@ fun MapScreen(
                         Row(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
+                                .clickable {
+                                    searchPressed = !searchPressed
+                                }
                                 .height(45.dp)
                                 .weight(1f)
                                 .background(MaterialTheme.colors.background),
@@ -215,7 +298,7 @@ fun MapScreen(
                             Text(
                                 text = "Search",
                                 style = Poppins_Regular,
-                                fontSize = 13.sp,
+                                fontSize = 11.sp,
                                 color = Color.Black,
                                 modifier = Modifier
                                     .padding(start = 10.dp)
@@ -259,44 +342,9 @@ fun MapScreen(
 
             Row(
                 modifier = Modifier
-                    .padding(bottom = 10.dp)
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ) {
-                Spacer(modifier = Modifier.weight(1f))
-
-                AnimatedVisibility(
-                    visible = init,
-                    enter = slideInVertically(
-                        initialOffsetY = { 500 },
-                        animationSpec = tween(400, 600, easing = EaseInOut)
-                    )
-                ) {
-                    Box(modifier = Modifier
-                        .size(60.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .clickable {
-                            drawPolygonButtonPressed = !drawPolygonButtonPressed
-                        }
-                        .background(Color.Black)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_draw_polygon),
-                            contentDescription = "",
-                            tint = Color.Unspecified,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-
-                        )
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(),
-                verticalAlignment = Alignment.Bottom
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Spacer(modifier = Modifier.weight(1f))
 
@@ -374,10 +422,14 @@ fun MapScreen(
                 }
 
                 AnimatedVisibility(
-                    visible = init,
+                    visible = init && !drawPolygonButtonPressed,
                     enter = slideInVertically(
                         initialOffsetY = { 500 },
                         animationSpec = tween(400, 700, easing = EaseInOut)
+                    ),
+                    exit = slideOutVertically(
+                        targetOffsetY = { 500 },
+                        animationSpec = tween(400, easing = EaseInOut)
                     )
                 ) {
                     Box(modifier = Modifier
@@ -386,15 +438,42 @@ fun MapScreen(
                         .clickable {
                             settingsButtonClicked = !settingsButtonClicked
                         }
-                        .background(Color.Black)
+                        .background(White1)
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_gear),
                             contentDescription = "",
-                            tint = Color.Unspecified,
+                            tint = Color.Black,
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .rotate(gearRotationDegree)
+                        )
+                    }
+                }
+
+                AnimatedVisibility(
+                    visible = init,
+                    enter = slideInVertically(
+                        initialOffsetY = { 500 },
+                        animationSpec = tween(400, 600, easing = EaseInOut)
+                    )
+                ) {
+                    Box(modifier = Modifier
+                        .padding(start = 10.dp)
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable {
+                            drawPolygonButtonPressed = !drawPolygonButtonPressed
+                        }
+                        .background(Yellow1)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_draw_polygon),
+                            contentDescription = "",
+                            tint = Color.Black,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+
                         )
                     }
                 }

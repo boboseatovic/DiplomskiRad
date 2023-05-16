@@ -122,3 +122,12 @@ val Poppins_Regular: TextStyle
             fontFamily = FontFamily(Font(R.font.poppins_regular))
         )
     }
+
+val Poppins_Regular_11: TextStyle
+    @Composable
+    get() {
+        return TextStyle(
+            fontFamily = FontFamily(Font(R.font.poppins_regular)),
+            fontSize = 11.sp
+        )
+    }

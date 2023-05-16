@@ -17,6 +17,11 @@ class MapScreenViewModel @Inject constructor(
             MapScreenIntents.GoBack -> {
                 navigationManager.goBack()
             }
+            is MapScreenIntents.Search -> {
+                internalState.value = internalState.value.copy(
+                    searchValue = intent.searchValue
+                )
+            }
         }
     }
 
