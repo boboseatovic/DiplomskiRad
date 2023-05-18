@@ -5,7 +5,6 @@ import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -34,134 +33,63 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import hr.bornaseatovic.myapplication.R
 import hr.bornaseatovic.myapplication.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MapScreen(
     viewModel: MapScreenViewModel = hiltViewModel()
 ) {
     val viewState = viewModel.viewState.collectAsState().value
-
     val coroutineScope = rememberCoroutineScope()
-
-    var init by remember {
-        mutableStateOf(false)
-    }
-
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusLocalManager = LocalFocusManager.current
 
-    val focusRequester = remember {
-        FocusRequester()
+    var init by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(viewState.location.value, 17.5f)
     }
 
-    var addressButtonPressed by remember {
-        mutableStateOf(false)
-    }
+    val properties by remember { mutableStateOf(MapProperties(mapType = MapType.HYBRID)) }
 
-    var coordinatesButtonPressed by remember {
-        mutableStateOf(true)
-    }
-
-    var drawPolygonButtonPressed by remember {
-        mutableStateOf(false)
-    }
-
-    var searchPressed by remember {
-        mutableStateOf(false)
-    }
-
-    var animateSearch by remember {
-        mutableStateOf(false)
+    LaunchedEffect(key1 = Unit, block = { init = true })
+    LaunchedEffect(viewState.location) {
+        cameraPositionState.animate(
+            CameraUpdateFactory.newLatLng(viewState.location.value),
+            500)
+        cameraPositionState.animate(
+            CameraUpdateFactory.zoomTo(17.5f)
+        )
     }
 
     val searchAlpha by animateFloatAsState(
-        targetValue = if (animateSearch) 0.5f else 0f,
+        targetValue = if (viewState.animateSearch.value) 0.5f else 0f,
         tween(200, easing = EaseInOut)
     )
-
-    var animateCoordinates by remember {
-        mutableStateOf(false)
-    }
-
     val coordinatesAlpha by animateFloatAsState(
-        targetValue = if (!animateCoordinates) 0.5f else 0f,
+        targetValue = if (!viewState.animateCoordinates.value) 0.5f else 0f,
         tween(200, easing = EaseInOut)
     )
-
     val coordinatesFieldWidth by animateDpAsState(
-        targetValue = if (searchPressed) 150.dp else if (!animateCoordinates) 130.dp else 210.dp,
+        targetValue = if (viewState.searchPressed.value) 150.dp else
+            if (!viewState.animateCoordinates.value) 130.dp else 210.dp,
         tween(200, easing = EaseInOut)
     )
-
     val longitudeTextOffset by animateDpAsState(
-        targetValue = if (!animateCoordinates) 0.dp else 40.dp,
+        targetValue = if (!viewState.animateCoordinates.value) 0.dp else 80.dp,
         tween(200, easing = EaseInOut)
     )
-
     val closeButtonWidth by animateDpAsState(
-        targetValue = if (searchPressed) 0.dp else 45.dp,
+        targetValue = if (viewState.searchPressed.value) 0.dp else 45.dp,
         tween(200, easing = EaseInOut)
     )
-
-    LaunchedEffect(key1 = Unit, block = { init = true })
-
-
-    var launchCameraUpdate by remember {
-        mutableStateOf(false)
-    }
-
-    var location by remember {
-        viewState.location
-    }
-
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 19f)
-    }
-
-
-    var latitudePlaceholderVisible by remember {
-        mutableStateOf(true)
-    }
-
-    var longitudePlaceholderVisible by remember {
-        mutableStateOf(true)
-    }
-
-    var searchPlaceholderVisible by remember {
-        mutableStateOf(true)
-    }
-
-
-    var uiSettings by remember {
-        mutableStateOf(
-            MapUiSettings(
-                compassEnabled = false,
-                zoomControlsEnabled = false
-            )
-        )
-    }
-
-    var properties by remember {
-        mutableStateOf(
-            MapProperties(
-                mapType = MapType.SATELLITE
-            )
-        )
-    }
-
-    var settingsButtonClicked by remember {
-        mutableStateOf(false)
-    }
-
     val gearRotationDegree by animateFloatAsState(
-        targetValue = if (settingsButtonClicked) 180f else 0f,
+        targetValue = if (viewState.settingsButtonPressed.value) 180f else 0f,
         tween(500, easing = EaseInOut)
     )
 
@@ -173,9 +101,9 @@ fun MapScreen(
         GoogleMap(
             modifier = Modifier
                 .matchParentSize()
-                .alpha(if (drawPolygonButtonPressed) 0.5f else 1f),
+                .alpha(if (viewState.drawPolygonButtonPressed.value) 0.5f else 1f),
             cameraPositionState = cameraPositionState,
-            uiSettings = uiSettings,
+            uiSettings = viewState.mapUiSettings.value,
             properties = properties
         ) {}
         Column(
@@ -194,7 +122,7 @@ fun MapScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 AnimatedVisibility(
                     modifier = Modifier.weight(100f),
-                    visible = init && !drawPolygonButtonPressed,
+                    visible = init && !viewState.drawPolygonButtonPressed.value,
                     enter = slideInVertically(
                         initialOffsetY = { -4000 },
                         animationSpec = tween(700, if (init) 400 else 0, easing = EaseInOut)
@@ -204,7 +132,7 @@ fun MapScreen(
                         animationSpec = tween(700, easing = EaseInOut)
                     )
                 ) {
-                    if (coordinatesButtonPressed) {
+                    if (viewState.coordinatesButtonPressed.value) {
                         Box(modifier = Modifier.weight(1f)) {
                             Row(
                                 modifier = Modifier
@@ -222,8 +150,8 @@ fun MapScreen(
                                         .weight(1f)
                                         .onFocusChanged {
                                             if (it.isFocused) {
-                                                latitudePlaceholderVisible = false
-                                                searchPressed = true
+                                                viewState.latitudePlaceholderVisible.value = false
+                                                viewState.searchPressed.value = true
                                             }
                                         },
                                     value = viewState.latitudeValue,
@@ -231,12 +159,12 @@ fun MapScreen(
                                     onValueChange = {
                                         viewModel.onIntent(MapScreenIntents.InputLatitude(it))
                                     },
-                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                    keyboardActions = KeyboardActions(onDone = {
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                    keyboardActions = KeyboardActions(onNext = {
                                         keyboardController?.hide()
                                         focusLocalManager.clearFocus(true)
-                                        searchPressed = false
-                                        latitudePlaceholderVisible = true
+                                        viewState.searchPressed.value = false
+                                        viewState.latitudePlaceholderVisible.value = true
                                         focusRequester.requestFocus()
                                     }),
                                     textStyle = Poppins_Regular_11.copy(
@@ -244,13 +172,14 @@ fun MapScreen(
                                     ),
                                     maxLines = 1
                                 ) { innerPaddingValue ->
-                                    if (viewState.latitudeValue.isBlank() && latitudePlaceholderVisible) {
+                                    if (viewState.latitudeValue.isBlank() && viewState.latitudePlaceholderVisible.value) {
                                         Text(
                                             text = "Latitude",
                                             style = Poppins_Regular,
                                             fontSize = 11.sp,
                                             color = Color.Black,
                                             modifier = Modifier
+                                                .alpha(1f)
                                                 .alpha(if (viewState.latitudeValue.isBlank()) coordinatesAlpha else 1f)
                                         )
                                     }
@@ -275,8 +204,8 @@ fun MapScreen(
                                         .focusRequester(focusRequester)
                                         .onFocusChanged {
                                             if (it.isFocused) {
-                                                longitudePlaceholderVisible = false
-                                                searchPressed = true
+                                                viewState.longitudePlaceholderVisible.value = false
+                                                viewState.searchPressed.value = true
                                             }
                                         },
                                     value = viewState.longitudeValue,
@@ -284,42 +213,26 @@ fun MapScreen(
                                     onValueChange = {
                                         viewModel.onIntent(MapScreenIntents.InputLongitude(it))
                                     },
-                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                    keyboardActions = KeyboardActions(onDone = {
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                    keyboardActions = KeyboardActions(onSearch = {
                                         keyboardController?.hide()
                                         focusLocalManager.clearFocus(true)
-                                        searchPressed = false
-                                        longitudePlaceholderVisible = true
-                                        if (viewState.latitudeValue.isNotBlank() && viewState.longitudeValue.isNotBlank()) {
-                                            location = LatLng(
-                                                viewState.latitudeValue.toDouble(),
-                                                viewState.longitudeValue.toDouble()
-                                            )
-                                        }
-                                        coroutineScope.launch {
-                                            cameraPositionState.animate(
-                                                CameraUpdateFactory.newLatLng(
-                                                    LatLng(
-                                                        viewState.latitudeValue.toDouble(),
-                                                        viewState.longitudeValue.toDouble()
-                                                    )
-                                                ), 1000
-                                            )
-                                        }
+                                        viewState.searchPressed.value = false
+                                        viewState.longitudePlaceholderVisible.value = true
+                                        viewModel.onIntent(MapScreenIntents.SearchLatLong)
                                     }),
                                     textStyle = Poppins_Regular_11.copy(
                                         color = Color.Black,
                                     ),
                                     maxLines = 1
                                 ) { innerPaddingValue ->
-                                    if (viewState.longitudeValue.isBlank() && longitudePlaceholderVisible) {
+                                    if (viewState.longitudeValue.isBlank() && viewState.longitudePlaceholderVisible.value) {
                                         Text(
                                             text = "Longitude",
                                             style = Poppins_Regular,
                                             fontSize = 11.sp,
                                             color = Color.Black,
                                             modifier = Modifier
-                                                .offset(x = longitudeTextOffset)
                                                 .alpha(if (viewState.longitudeValue.isBlank()) coordinatesAlpha else 1f)
                                         )
                                     }
@@ -329,7 +242,7 @@ fun MapScreen(
                         }
                     }
 
-                    if (addressButtonPressed) {
+                    if (viewState.addressButtonPressed.value) {
                         Row(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
@@ -350,11 +263,12 @@ fun MapScreen(
                             )
                             BasicTextField(
                                 modifier = Modifier
+                                    .padding(end = 10.dp)
                                     .weight(1f)
                                     .onFocusChanged {
                                         if (it.isFocused) {
-                                            searchPlaceholderVisible = false
-                                            searchPressed = true
+                                            viewState.searchPlaceholderVisible.value = false
+                                            viewState.searchPressed.value = true
                                         }
                                     },
                                 value = viewState.searchValue,
@@ -364,25 +278,18 @@ fun MapScreen(
                                 },
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                                 keyboardActions = KeyboardActions(onSearch = {
-                                    viewModel.onIntent(MapScreenIntents.Search)
                                     keyboardController?.hide()
                                     focusLocalManager.clearFocus(true)
-                                    searchPressed = false
-                                    searchPlaceholderVisible = true
-                                    coroutineScope.launch {
-                                        cameraPositionState.animate(
-                                            CameraUpdateFactory.newLatLng(
-                                                viewState.location.value
-                                            )
-                                        )
-                                    }
+                                    viewState.searchPressed.value = false
+                                    viewState.searchPlaceholderVisible.value = true
+                                    viewModel.onIntent(MapScreenIntents.SearchAddress)
                                 }),
                                 textStyle = Poppins_Regular_11.copy(
                                     color = Color.Black,
                                 ),
                                 maxLines = 1
                             ) { innerPaddingValue ->
-                                if (viewState.searchValue.isBlank() && searchPlaceholderVisible) {
+                                if (viewState.searchValue.isBlank() && viewState.searchPlaceholderVisible.value) {
                                     Text(
                                         text = "Search",
                                         style = Poppins_Regular,
@@ -410,8 +317,9 @@ fun MapScreen(
                             .padding(start = 10.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .clickable {
-                                if (drawPolygonButtonPressed) {
-                                    drawPolygonButtonPressed = false
+                                if (viewState.drawPolygonButtonPressed.value) {
+                                    viewModel.onIntent(MapScreenIntents.DoneDrawingPolygon)
+                                    viewState.drawPolygonButtonPressed.value = false
                                 } else {
                                     viewModel.onIntent(MapScreenIntents.GoBack)
                                 }
@@ -421,7 +329,7 @@ fun MapScreen(
                             .background(Color.Black)
                     ) {
                         Icon(
-                            painter = painterResource(id = if (drawPolygonButtonPressed) R.drawable.ic_check else R.drawable.ic_close),
+                            painter = painterResource(id = if (viewState.drawPolygonButtonPressed.value) R.drawable.ic_check else R.drawable.ic_close),
                             contentDescription = "",
                             tint = Color.Unspecified,
                             modifier = Modifier.align(
@@ -443,7 +351,7 @@ fun MapScreen(
                 Spacer(modifier = Modifier.weight(1f))
 
                 AnimatedVisibility(
-                    visible = settingsButtonClicked,
+                    visible = viewState.settingsButtonPressed.value,
                     enter = expandHorizontally(
                         initialWidth = { 0 },
                         animationSpec = tween(500)
@@ -461,11 +369,12 @@ fun MapScreen(
                                 .clip(RoundedCornerShape(10.dp))
                                 .clickable {
                                     coroutineScope.launch {
-                                        animateCoordinates = true
+                                        viewState.settingsButtonPressed.value = false
+                                        viewState.animateCoordinates.value = true
                                         delay(200)
-                                        coordinatesButtonPressed = false
-                                        addressButtonPressed = true
-                                        animateSearch = true
+                                        viewState.coordinatesButtonPressed.value = false
+                                        viewState.addressButtonPressed.value = true
+                                        viewState.animateSearch.value = true
                                     }
                                 }
                                 .background(MaterialTheme.colors.background)
@@ -480,7 +389,7 @@ fun MapScreen(
                                     .align(
                                         Alignment.Center
                                     )
-                                    .alpha(if (addressButtonPressed) 1f else 0.4f)
+                                    .alpha(if (viewState.addressButtonPressed.value) 1f else 0.4f)
                             )
                         }
 
@@ -490,11 +399,12 @@ fun MapScreen(
                                 .clip(RoundedCornerShape(10.dp))
                                 .clickable {
                                     coroutineScope.launch {
-                                        animateSearch = false
+                                        viewState.settingsButtonPressed.value = false
+                                        viewState.animateSearch.value = false
                                         delay(200)
-                                        addressButtonPressed = false
-                                        coordinatesButtonPressed = true
-                                        animateCoordinates = false
+                                        viewState.addressButtonPressed.value = false
+                                        viewState.coordinatesButtonPressed.value = true
+                                        viewState.animateCoordinates.value = false
                                     }
                                 }
                                 .background(MaterialTheme.colors.background)
@@ -509,14 +419,14 @@ fun MapScreen(
                                     .align(
                                         Alignment.Center
                                     )
-                                    .alpha(if (coordinatesButtonPressed) 1f else 0.4f)
+                                    .alpha(if (viewState.coordinatesButtonPressed.value) 1f else 0.4f)
                             )
                         }
                     }
                 }
 
                 AnimatedVisibility(
-                    visible = init && !drawPolygonButtonPressed,
+                    visible = init && !viewState.drawPolygonButtonPressed.value,
                     enter = slideInVertically(
                         initialOffsetY = { 500 },
                         animationSpec = tween(400, 700, easing = EaseInOut)
@@ -530,7 +440,8 @@ fun MapScreen(
                         .size(60.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .clickable {
-                            settingsButtonClicked = !settingsButtonClicked
+                            viewState.settingsButtonPressed.value =
+                                !viewState.settingsButtonPressed.value
                         }
                         .background(White1)
                     ) {
@@ -546,7 +457,7 @@ fun MapScreen(
                 }
 
                 AnimatedVisibility(
-                    visible = init && !drawPolygonButtonPressed,
+                    visible = init && !viewState.drawPolygonButtonPressed.value,
                     enter = slideInVertically(
                         initialOffsetY = { 500 },
                         animationSpec = tween(400, 600, easing = EaseInOut)
@@ -561,8 +472,9 @@ fun MapScreen(
                         .size(60.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .clickable {
-                            drawPolygonButtonPressed = true
-                            settingsButtonClicked = false
+                            viewState.drawPolygonButtonPressed.value = true
+                            viewState.settingsButtonPressed.value = false
+                            viewModel.onIntent(MapScreenIntents.DrawPolygon)
                         }
                         .background(Yellow1)
                     ) {
