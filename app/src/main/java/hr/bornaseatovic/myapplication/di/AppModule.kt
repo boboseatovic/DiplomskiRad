@@ -67,9 +67,10 @@ object AppModule {
     @Singleton
     fun provideRemoteDataSource(
         pVgisAPI: PVgisAPI,
-        geolocationAPI: GeolocationAPI
+        geolocationAPI: GeolocationAPI,
+        database: Database
     ): RemoteDataSource {
-        return  RemoteDataSource(pVgisAPI, geolocationAPI)
+        return  RemoteDataSource(pVgisAPI, geolocationAPI, database)
     }
 
     @Singleton

@@ -2,29 +2,35 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "353314132895c221654bf0723321e847",
+    "identityHash": "eb6bc82758c0dde8092f3dd9b68a2979",
     "entities": [
       {
-        "tableName": "ExampleDb",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` INTEGER NOT NULL, `example` TEXT NOT NULL, PRIMARY KEY(`key`))",
+        "tableName": "ProductionDb",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`productionKey` TEXT NOT NULL, `monthlyProduction` TEXT NOT NULL, `yearlyProduction` REAL NOT NULL, PRIMARY KEY(`productionKey`))",
         "fields": [
           {
-            "fieldPath": "key",
-            "columnName": "key",
-            "affinity": "INTEGER",
+            "fieldPath": "productionKey",
+            "columnName": "productionKey",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "example",
-            "columnName": "example",
+            "fieldPath": "monthlyProduction",
+            "columnName": "monthlyProduction",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "yearlyProduction",
+            "columnName": "yearlyProduction",
+            "affinity": "REAL",
             "notNull": true
           }
         ],
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "key"
+            "productionKey"
           ]
         },
         "indices": [],
@@ -34,7 +40,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '353314132895c221654bf0723321e847')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'eb6bc82758c0dde8092f3dd9b68a2979')"
     ]
   }
 }

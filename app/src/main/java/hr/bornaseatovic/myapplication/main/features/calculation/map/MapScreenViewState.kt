@@ -3,6 +3,8 @@ package hr.bornaseatovic.myapplication.main.features.calculation.map
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
 
 data class MapScreenViewState(
@@ -27,6 +29,11 @@ data class MapScreenViewState(
             compassEnabled = false,
             zoomControlsEnabled = false,
             scrollGesturesEnabled = true
+        )
+    ),
+    val mapProperties: MutableState<MapProperties> = mutableStateOf(
+        MapProperties(
+            mapType = MapType.HYBRID
         )
     )
 )

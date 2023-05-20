@@ -13,63 +13,94 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import hr.bornaseatovic.myapplication.ui.theme.OffBlack
+import hr.bornaseatovic.myapplication.ui.theme.Yellow1
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ThirdScreen(
     viewModel: CalculatorViewModel,
     viewState: CalculatorViewState,
-    navigate: () -> Unit
 ) {
 
-    val coroutineScope = rememberCoroutineScope()
+//    val barChartInputsPercent = viewState.monthlyProduction.map { it/maxMonthlyProduction }
 
-    var clicked by remember {
-        mutableStateOf(false)
-    }
+    val defaultMaxHeight = 200.dp
 
-    val boxHeight by animateDpAsState(
-        targetValue = if (clicked) LocalConfiguration.current.screenHeightDp.dp else 60.dp,
-        tween(300)
-    )
-    val boxWidth by animateDpAsState(
-        targetValue = if (clicked) LocalConfiguration.current.screenWidthDp.dp else LocalConfiguration.current.screenWidthDp.dp - 40.dp,
-        tween(300)
-    )
+    val borderColor = OffBlack
+    val density = LocalDensity.current
+    val strokeWidth = with(density) { 1.dp.toPx() }
 
-    val boxOffset by animateDpAsState(targetValue = if (clicked) 0.dp else -20.dp, tween(300))
-
-
-    Box(modifier = Modifier
+    Column(modifier = Modifier
         .fillMaxSize()
-        .navigationBarsPadding()) {
+        .padding(16.dp)
+    ) {
 
-        Box(
+        Row(
             modifier = Modifier
-                .offset(y = boxOffset)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color.Black)
-                .width(boxWidth)
-                .height(boxHeight)
-                .align(Alignment.BottomCenter)
-                .clickable(
-                    interactionSource = MutableInteractionSource(),
-                    onClick = {
-                        clicked = !clicked
-                    },
-                    indication = null
-                )
+                .fillMaxWidth()
+                .height(defaultMaxHeight)
+                .drawBehind {
+                    // draw X-Axis
+                    drawLine(
+                        color = borderColor,
+                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = strokeWidth
+                    )
+                    // draw Y-Axis
+                    drawLine(
+                        color = borderColor,
+                        start = Offset(0f, 0f),
+                        end = Offset(0f, size.height),
+                        strokeWidth = strokeWidth
+                    )
+                }
+            ,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
         ) {
-            if (clicked) {
-
+            viewState.monthlyProduction?.let {
+                it.forEachIndexed { index, item ->
+                Bar(
+                    value = item / it.max(),
+                    color = if (index % 2 == 0) OffBlack else Yellow1,
+                    maxHeight = defaultMaxHeight
+                )
             }
+            }
+
         }
+
     }
+}
+
+@Composable
+private fun RowScope.Bar(
+    value: Double,
+    color: Color,
+    maxHeight: Dp
+) {
+
+    val itemHeight = remember(value) { value * maxHeight.value }
+
+    Spacer(
+        modifier = Modifier
+            .padding(horizontal = 2.dp)
+            .height(itemHeight.dp)
+            .weight(1f)
+            .background(color)
+    )
+
 }

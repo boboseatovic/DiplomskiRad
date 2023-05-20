@@ -30,9 +30,8 @@ fun CalculatorScreen(
     val pagerState = rememberPagerState()
 
     HorizontalPager(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.padding(top = 30.dp).navigationBarsPadding().fillMaxSize(),
         pageCount = 3,
-        userScrollEnabled = false,
         state = pagerState
     ) { page ->
         when (page) {
@@ -46,9 +45,7 @@ fun CalculatorScreen(
                     pagerState.animateScrollToPage(pagerState.currentPage + 1)
                 }
             }
-            2 -> ThirdScreen(viewModel = viewModel, viewState = viewState) {
-                navigate()
-            }
+            2 -> ThirdScreen(viewModel = viewModel, viewState = viewState)
         }
 
     }

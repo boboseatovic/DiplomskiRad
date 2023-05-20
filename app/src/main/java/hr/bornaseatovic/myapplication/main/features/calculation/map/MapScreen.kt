@@ -55,8 +55,6 @@ fun MapScreen(
         position = CameraPosition.fromLatLngZoom(viewState.location.value, 17.5f)
     }
 
-    val properties by remember { mutableStateOf(MapProperties(mapType = MapType.HYBRID)) }
-
     LaunchedEffect(key1 = Unit, block = { init = true })
     LaunchedEffect(viewState.location) {
         cameraPositionState.animate(
@@ -104,8 +102,10 @@ fun MapScreen(
                 .alpha(if (viewState.drawPolygonButtonPressed.value) 0.5f else 1f),
             cameraPositionState = cameraPositionState,
             uiSettings = viewState.mapUiSettings.value,
-            properties = properties
-        ) {}
+            properties = viewState.mapProperties.value
+        ) {
+
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()

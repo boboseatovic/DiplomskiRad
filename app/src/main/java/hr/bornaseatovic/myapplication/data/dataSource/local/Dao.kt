@@ -3,15 +3,13 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import hr.bornaseatovic.myapplication.data.model.ExampleDb
+import hr.bornaseatovic.myapplication.data.model.local.ProductionDb
 
 @Dao
 interface Dao {
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertExampleDb(exampleDb: ExampleDb)
+    fun insertProduction(ProductionDb: ProductionDb)
 
-    @Query("SELECT * FROM exampleDb")
-    fun getExampleDb(): ExampleDb
-
+    @Query("SELECT * FROM productionDb")
+    suspend fun getMonthlyProduction(): ProductionDb?
 }

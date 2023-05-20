@@ -1,14 +1,17 @@
 package hr.bornaseatovic.myapplication.data.dataSource.local
 
 import androidx.room.RoomDatabase
-import hr.bornaseatovic.myapplication.data.model.ExampleDb
+import androidx.room.TypeConverters
+import hr.bornaseatovic.myapplication.data.model.local.ProductionDb
 
 @androidx.room.Database(
     entities = [
-        ExampleDb::class
+        ProductionDb::class,
                ],
     version = 1
 )
+
+@TypeConverters(Converters::class)
 abstract class Database: RoomDatabase() {
 
     abstract val dao: Dao

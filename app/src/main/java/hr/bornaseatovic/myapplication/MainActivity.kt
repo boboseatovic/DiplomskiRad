@@ -22,6 +22,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import hr.bornaseatovic.myapplication.main.features.calculation.map.MapScreen
+import hr.bornaseatovic.myapplication.main.features.calculator.CalculatorScreen
 import hr.bornaseatovic.myapplication.main.features.calculator.FourthScreen
 import hr.bornaseatovic.myapplication.main.features.home.HomeScreen
 import hr.bornaseatovic.myapplication.main.navigation.NavigationManager
@@ -74,24 +75,29 @@ class MainActivity : ComponentActivity() {
                 }
                 AnimatedNavHost(
                     navController = navController,
-                    startDestination = HomeDestinations.mapScreen()
+                    startDestination = "pager"
                 ) {
+                    composable("pager") {
+                        CalculatorScreen {
+                            navigationManager.navigate("fourth_screen")
+                        }
+                    }
                     composable(HomeDestinations.homeScreen()) {
                         HomeScreen()
 //                        CalculatorScreen {
 //                            navController.navigate("fourth_screen")
 //                        }
                     }
-//                    composable(
-//                        "fourth_screen",
-//                        enterTransition = {
-//                            EnterTransition.None
-//                        }
-//                    ) {
-//                        FourthScreen {
-//                            navController.popBackStack("home_route", true, true)
-//                        }
-//                    }
+                    composable(
+                        "fourth_screen",
+                        enterTransition = {
+                            EnterTransition.None
+                        }
+                    ) {
+                        FourthScreen {
+                            navController.popBackStack("home_route", true, true)
+                        }
+                    }
                     composable(
                         route = HomeDestinations.mapScreen(),
                         enterTransition = {

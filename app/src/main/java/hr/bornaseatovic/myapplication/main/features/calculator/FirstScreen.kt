@@ -119,6 +119,7 @@ fun FirstScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         PrimaryButton(text = "Dalje") {
+            viewModel.onIntent(CalculatorIntents.IzracunajPVGIS)
             onDalje()
         }
     }
