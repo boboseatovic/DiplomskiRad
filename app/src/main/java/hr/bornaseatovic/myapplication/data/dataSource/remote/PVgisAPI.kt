@@ -9,7 +9,7 @@ interface PVgisAPI {
     suspend fun fetchPVCalculations(
         @Query("lat") lat: Float,
         @Query("lon") long: Float,
-        @Query("peakpower") peakPower: Float = 1f,
+        @Query("peakpower") peakPower: Float = 10f,
         @Query("loss") loss: Float = 14f,
         @Query("outputformat") outputFormat: String = "json",
         @Query("usehorizon") useHorizon: Int = 1,

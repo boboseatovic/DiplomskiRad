@@ -27,7 +27,5 @@ sealed interface CalculatorIntents {
 
     object IzracunajPVGIS: CalculatorIntents
 
-    object InitThirdScreen: CalculatorIntents
-    object NavigateToFourthScreen : CalculatorIntents
 
 }

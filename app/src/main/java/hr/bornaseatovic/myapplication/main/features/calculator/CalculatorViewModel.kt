@@ -59,10 +59,6 @@ class CalculatorViewModel @Inject constructor(
                     povrsinaZapadnogKrova = intent.povrsina
                 )
             }
-
-            CalculatorIntents.NavigateToFourthScreen -> {
-
-            }
             is CalculatorIntents.PromjeniMjesecnaPotrosnja -> {
 
             }
@@ -70,71 +66,78 @@ class CalculatorViewModel @Inject constructor(
                 internalState.value = internalState.value.copy(
                     potrosnja1mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni2Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja2mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni3Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja3mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni4Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja4mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni5Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja5mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni6Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja6mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni7Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja7mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni8Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja8mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni9Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja9mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni10Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja10mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni11Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja11mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             is CalculatorIntents.Promjeni12Mjesec -> {
                 internalState.value = internalState.value.copy(
                     potrosnja12mjesec = intent.potrosnja
                 )
+                saveConsumption()
             }
             CalculatorIntents.IzracunajPVGIS -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     calculatePVGIS()
                 }
-            }
-            CalculatorIntents.InitThirdScreen -> {
-//                viewModelScope.launch(Dispatchers.IO) {
-//                    getProduction()
-//                }
             }
         }
     }
@@ -153,6 +156,7 @@ class CalculatorViewModel @Inject constructor(
                     viewModelScope.launch(Dispatchers.IO) {
                         getProduction()
                     }
+                    saveConsumption()
                 }
             }
         }
@@ -162,6 +166,41 @@ class CalculatorViewModel @Inject constructor(
         val response = localDataSource.getProduction()
         internalState.value = internalState.value.copy(
             monthlyProduction = response?.monthlyProduction,
+            yearlyProduction = response?.yearlyProduction ?: 0.0
+        )
+    }
+
+    private fun saveConsumption() {
+        val completeConsumption =
+            internalState.value.potrosnja1mjesec.toDouble() +
+            internalState.value.potrosnja2mjesec.toDouble() +
+            internalState.value.potrosnja3mjesec.toDouble() +
+            internalState.value.potrosnja4mjesec.toDouble() +
+            internalState.value.potrosnja5mjesec.toDouble() +
+            internalState.value.potrosnja6mjesec.toDouble() +
+            internalState.value.potrosnja7mjesec.toDouble() +
+            internalState.value.potrosnja8mjesec.toDouble() +
+            internalState.value.potrosnja9mjesec.toDouble() +
+            internalState.value.potrosnja10mjesec.toDouble() +
+            internalState.value.potrosnja11mjesec.toDouble() +
+            internalState.value.potrosnja12mjesec.toDouble()
+        val monthlyConsumption = listOf(
+            internalState.value.potrosnja1mjesec.toDouble(),
+            internalState.value.potrosnja2mjesec.toDouble(),
+            internalState.value.potrosnja3mjesec.toDouble(),
+            internalState.value.potrosnja4mjesec.toDouble(),
+            internalState.value.potrosnja5mjesec.toDouble(),
+            internalState.value.potrosnja6mjesec.toDouble(),
+            internalState.value.potrosnja7mjesec.toDouble(),
+            internalState.value.potrosnja8mjesec.toDouble(),
+            internalState.value.potrosnja9mjesec.toDouble(),
+            internalState.value.potrosnja10mjesec.toDouble(),
+            internalState.value.potrosnja11mjesec.toDouble(),
+            internalState.value.potrosnja12mjesec.toDouble()
+        )
+        internalState.value = internalState.value.copy(
+            completeConsumption = completeConsumption,
+            monthlyConsumption = monthlyConsumption
         )
     }
 }
